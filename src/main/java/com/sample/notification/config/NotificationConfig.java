@@ -1,9 +1,6 @@
 package com.sample.notification.config;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.common.base.Predicates;
 import com.sample.notification.util.HeaderRequestInterceptor;
 
 import springfox.documentation.builders.PathSelectors;
@@ -26,6 +23,8 @@ public class NotificationConfig {
 
 	@Value("${firebase.server.key}")
 	private String firebaseServerKey;
+	@Value("${firebase.server.senderId}")
+	private String senderId;
 	
 	@Bean
 	public RestTemplate restTemplate() {
@@ -33,7 +32,7 @@ public class NotificationConfig {
 		ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
 		interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + firebaseServerKey));
 		interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
-		interceptors.add(new HeaderRequestInterceptor("project_id", "629270246248"));
+		interceptors.add(new HeaderRequestInterceptor("project_id", senderId));
 		restTemplate.setInterceptors(interceptors);
 		return restTemplate;
 	}
@@ -43,7 +42,7 @@ public class NotificationConfig {
         return new Docket(DocumentationType.SWAGGER_2)  
           .select()                                  
           .apis(RequestHandlerSelectors.any())              
-          .paths(PathSelectors.any())                          
+          .paths(Predicates.not(PathSelectors.regex("/error")))                          
           .build();                                           
     }
 	
